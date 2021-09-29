@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Player
 from .models import League
+from .models import Team
+
 from base64 import b64encode
 
 path = "https://ancient-badlands-43562.herokuapp.com/"
@@ -15,8 +17,10 @@ class PlayerSerializer(serializers.ModelSerializer):
         id_f = b64encode(string.encode()).decode('utf-8')
         data['id'] = id_f[0:22]
         data['times_trained'] = 0
-        data['league'] = path +  "league/"
-        data['team'] = path +  "teams/"
+        #data['team_fkey'] = League.objects.filter(id = data['team_id'])
+        leagueid = Team.objects.get(id=data['team_id'])
+        data['league'] = path +  "league/" + leagueid
+        data['team'] = path +  "teams/" + data['team_id']
         data['self'] = path +  "players/" + data['id']
         return data
 #Si existe otro mismo ID no agregar
@@ -36,3 +40,21 @@ class LeagueSerializer(serializers.ModelSerializer):
         data['self'] = path +  "players/" + data['id']
         return data
 #Si existe otro mismo ID no agregar
+
+class TeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ('id','league_id','name','city')
+
+    def to_representation(self, data):
+        data = super(TeamSerializer, self).to_representation(data)
+        string = data['name'] + ':' + data['city']
+        id_f = b64encode(string.encode()).decode('utf-8')
+        data['id'] = id_f[0:22]
+        data['id2'] = id_f[0:22]
+        data['league_fkey'] = League.objects.filter(id = data['league_id'])
+        data['league'] = path +  "leagues/" + data['league_id']
+        data['players'] = path +  "teams/"
+        data['self'] = path +  "teams/" + data['id']
+        #super().create(data)
+        return data
