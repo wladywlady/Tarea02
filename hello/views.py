@@ -14,7 +14,7 @@ from hello.serializers import TeamSerializer
 from hello.models import Team
 
 from base64 import b64encode
-path = "https://intense-brushlands-72593.herokuapp.com/"
+path = "https://stark-stream-20032.herokuapp.com/"
 
 
 from .models import Greeting
