@@ -10,8 +10,10 @@ urlpatterns = [
 
     path("leagues", views.league_list,name="league_create"),
     path("leagues/<str:league_id>/teams", views.team_list,name="team_create"),
-    path("teams", views.team_list,name="player_create"),
+
+    path("teams", views.team_list,name="team_list"),
     path("teams/<str:team_id>", views.team_detail,name="player_create"),
+
 
 ]
 

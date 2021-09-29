@@ -10,9 +10,9 @@ class League(models.Model):
     #id = models.CharField(primary_key=True, max_length = 100)
     name = models.CharField(max_length = 100)
     sport = models.CharField(max_length = 100)
-    league = models.CharField(max_length = 100,blank=True)
     teams = models.CharField(max_length = 100,blank=True)
-    self = models.CharField(max_length = 100,blank=True)
+    players = models.CharField(max_length = 100,blank=True)
+    Self = models.CharField(max_length = 100,blank=True)
 
     def __str__(self):
         return self.headline
