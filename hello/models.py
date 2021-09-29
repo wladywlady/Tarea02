@@ -12,7 +12,7 @@ class League(models.Model):
     sport = models.CharField(max_length = 100)
     teams = models.CharField(max_length = 100,blank=True)
     players = models.CharField(max_length = 100,blank=True)
-    Self = models.CharField(max_length = 100,blank=True)
+    _self = models.CharField(max_length = 100,blank=True)
 
     def __str__(self):
         return self.headline
@@ -27,7 +27,7 @@ class Team(models.Model):
     #league_fkey = models.ForeignKey(League, on_delete=models.CASCADE)
     league = models.CharField(max_length = 100,blank=True)
     players = models.CharField(max_length = 100,blank=True)
-    self = models.CharField(max_length = 100,blank=True)
+    _self = models.CharField(max_length = 100,blank=True)
 
     def __str__(self):
         return self.headline
@@ -44,7 +44,7 @@ class Player(models.Model):
     #team_fkey = models.ForeignKey(Team, blank=True, on_delete=models.CASCADE)
     league = models.CharField(max_length = 100,blank=True)
     team = models.CharField(max_length = 100,blank=True)
-    self = models.CharField(max_length = 100,blank=True)
+    _self = models.CharField(max_length = 100,blank=True)
 
     def __str__(self):
         return self.headline

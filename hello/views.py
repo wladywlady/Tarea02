@@ -20,6 +20,82 @@ path = "https://intense-brushlands-72593.herokuapp.com/"
 from .models import Greeting
 
 
+@api_view(['GET', 'POST'])
+def league_list(request, **kwargs):
+    """
+    List all code snippets, or create a new snippet.
+    """
+    if request.method == 'GET':
+        leagues = League.objects.all()
+        all = []
+        for league in leagues:
+            dicc = {}
+            dicc["id"] = league.id
+            dicc["name"] = league.name
+            dicc["sport"] = league.sport
+            dicc["teams"] = league.teams
+            dicc["players"] = league.players
+            dicc["self"] = league._self
+            all.append(dicc)
+        return Response(all, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        info = request.data
+        params = kwargs
+        string = info['name'] + ':' + info['sport']
+        id_f = b64encode(string.encode()).decode('utf-8')
+        leagues = League.objects.all()
+        for league in leagues:
+            if league.id == id_f[0:22]:
+                dicc = {}
+                dicc["id"] = league.id
+                dicc["name"] = league.name
+                dicc["sport"] = league.sport
+                dicc["teams"] = league.teams
+                dicc["players"] = league.players
+                dicc["self"] = league._self
+                return Response(dicc,status=status.HTTP_409_CONFLICT)
+        dicc  = {}
+        dicc["id"] = id_f[0:22]
+        dicc["name"] = info['name']
+        dicc["sport"] = info['sport']
+        dicc["teams"] = path +  "leagues/" + id_f[0:22]+  "/teams"
+        dicc["players"] = path +  "leagues/" + id_f[0:22] +  "/players"
+        #dicc["_self"] = path +  "leagues/" + id_f[0:22]
+        dicc["self"] = path +  "leagues/" + id_f[0:22]
+        serializer = LeagueSerializer(data=dicc)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def league_detail(request, team_id, format=None):
+    """
+    Retrieve, update or delete a code snippet.
+    """
+    try:
+        player = Player.objects.get(pk=pk)
+    except Player.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = PlayerSerializer(snippet)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = PlayerSerializer(player, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        player.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
 # Create your views here.
 def index(request):
     # return HttpResponse('Hello from Python!')
@@ -51,7 +127,7 @@ def player_list(request, **kwargs):
             dicc["times_trained"] = player.times_trained
             dicc["league"] = player.league
             dicc["team"] = player.team
-            dicc["self"] = player.self
+            dicc["self"] = player._self
             all.append(dicc)
         return Response(all, status=status.HTTP_200_OK)
 
@@ -107,88 +183,6 @@ def player_detail(request, team_id, format=None):
 
 
 
-@api_view(['GET', 'POST'])
-def league_list(request, **kwargs):
-    """
-    List all code snippets, or create a new snippet.
-    """
-    if request.method == 'GET':
-        leagues = League.objects.all()
-        all = []
-        for league in leagues:
-            dicc = {}
-            dicc["id"] = league.id
-            dicc["name"] = league.name
-            dicc["sport"] = league.sport
-            dicc["teams"] = league.teams
-            dicc["players"] = league.players
-            dicc["self"] = league.self
-            all.append(dicc)
-        return Response(all, status=status.HTTP_200_OK)
-
-    elif request.method == 'POST':
-        info = request.data
-        params = kwargs
-        string = info['name'] + ':' + info['sport']
-        id_f = b64encode(string.encode()).decode('utf-8')
-        leagues = League.objects.all()
-        for league in leagues:
-            if league.id == id_f[0:22]:
-                dicc = {}
-                dicc["id"] = league.id
-                dicc["name"] = league.name
-                dicc["sport"] = league.sport
-                dicc["teams"] = league.teams
-                dicc["players"] = league.players
-                dicc["self"] = league.self
-                return Response(dicc,status=status.HTTP_409_CONFLICT)
-        dicc  = {
-        "id": "Intro to Python",
-        "name": "Intro to data science",
-        "sport": "Machine Learning course",
-        "teams": "Web development.",
-        "players": "Web development.",
-        "Self": "Web development."
-        }
-        dicc["id"] = id_f[0:22]
-        dicc["name"] = info['name']
-        dicc["sport"] = info['sport']
-        dicc["teams"] = path +  "leagues/" + id_f[0:22]+  "/teams"
-        dicc["players"] = path +  "leagues/" + id_f[0:22] +  "/players"
-        dicc["Self"] = path +  "leagues/" + id_f[0:22]
-
-        serializer = LeagueSerializer(data=dicc)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def league_detail(request, team_id, format=None):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    try:
-        player = Player.objects.get(pk=pk)
-    except Player.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = PlayerSerializer(snippet)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = PlayerSerializer(player, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        player.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 
 @api_view(['GET', 'POST'])
 def team_list(request, **kwargs):
@@ -203,7 +197,7 @@ def team_list(request, **kwargs):
     elif request.method == 'POST':
         info = request.data
         params = kwargs
-        string = info['name'] + ':' +  info['city']
+        string = info['name'] + ':' + info['city']
         id_f = b64encode(string.encode()).decode('utf-8')
         teams = Team.objects.all()
         for team in teams:
@@ -215,28 +209,23 @@ def team_list(request, **kwargs):
                 dicc["city"] = team.city
                 dicc["league"] = team.league
                 dicc["players"] = team.players
-                dicc["self"] = team.self
+                dicc["self"] = team._self
                 return Response(dicc,status=status.HTTP_409_CONFLICT)
+        dicc  = {}
+        dicc["id"] = id_f[0:22]
+        dicc["league_id"] = params["league_id"]
+        dicc["name"] = info['name']
+        dicc["city"] = info['city']
+        dicc["league"] =  path +  "leagues/" + params["league_id"]
+        dicc["players"] = path +  "teams/" + id_f[0:22] +  "/players"
+        dicc["self"] = path +  "teams/" + id_f[0:22]
 
-        leagues = League.objects.all()
-        exist = 0
-        for league in leagues:
-            if league.id == params['league_id']:
-                exist = 1
-
-        if exist == 0:
-            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-        info['id'] =  id_f[0:22]
-        info['league_id'] =     params['league_id']
-        info['league'] = path +  "leagues/" + params['league_id']
-        info['players'] = path +  "teams/" + id_f[0:22]+  "/players"
-        info['self'] = path +  "teams/" + id_f[0:22]
-        serializer = TeamSerializer(data=info)
+        serializer = TeamSerializer(data=dicc)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     elif request.method == 'POST':
         info = request.data
