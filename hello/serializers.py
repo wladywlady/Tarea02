@@ -5,7 +5,7 @@ from .models import Team
 
 from base64 import b64encode
 
-path = "https://ancient-badlands-43562.herokuapp.com/"
+path = "https://stark-stream-20032.herokuapp.com/"
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
