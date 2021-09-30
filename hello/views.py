@@ -42,6 +42,12 @@ def league_list(request, **kwargs):
     elif request.method == 'POST':
         info = request.data
         params = kwargs
+        try:
+          info['name']
+          info['sport']
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         string = info['name'] + ':' + info['sport']
         id_f = b64encode(string.encode()).decode('utf-8')
         leagues = League.objects.all()
@@ -61,7 +67,6 @@ def league_list(request, **kwargs):
         dicc["sport"] = info['sport']
         dicc["teams"] = path +  "leagues/" + id_f[0:22]+  "/teams"
         dicc["players"] = path +  "leagues/" + id_f[0:22] +  "/players"
-        #dicc["_self"] = path +  "leagues/" + id_f[0:22]
         dicc["self"] = path +  "leagues/" + id_f[0:22]
         serializer = LeagueSerializer(data=dicc)
         if serializer.is_valid():
@@ -111,6 +116,30 @@ def db(request):
 
     return render(request, "db.html", {"greetings": greetings})
 
+"""
+elif request.method == 'POST':
+    info = request.data
+    params = kwargs
+    try:
+      info['name']
+      info['sport']
+    except:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+    dicc  = {}
+    dicc["id"] = id_f[0:22]
+    dicc["name"] = info['name']
+    dicc["sport"] = info['sport']
+    dicc["teams"] = path +  "leagues/" + id_f[0:22]+  "/teams"
+    dicc["players"] = path +  "leagues/" + id_f[0:22] +  "/players"
+    dicc["self"] = path +  "leagues/" + id_f[0:22]
+    serializer = LeagueSerializer(data=dicc)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 @api_view(['GET', 'POST'])
 def player_list(request, **kwargs):
  # serializer_class = BeaconSerializer
@@ -135,9 +164,33 @@ def player_list(request, **kwargs):
     elif request.method == 'POST':
         info = request.data
         params = kwargs
-        new_player = Player()
+        try:
+          info['name']
+          info['position']
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
         string = info['name'] + info['position']
         id_f = b64encode(string.encode()).decode('utf-8')
+        players = Player.objects.all()
+        for player in players:
+            if player.id == id_f[0:22]:
+                dicc = {}
+                dicc["id"] = league.id
+                dicc["team_id"] = league.name
+                dicc["name"] = league.name
+                dicc["sport"] = league.sport
+                dicc["age"] = league.sport
+                dicc["position"] = league.teams
+                dicc["times_trained"] = league.teams
+                dicc["league"] = league.players
+                dicc["team"] = league.players
+                dicc["self"] = league._self
+                return Response(dicc,status=status.HTTP_409_CONFLICT)
+
+        new_player = Player()
+
         new_player.id = id_f[0:22]
         new_player.times_trained = 0
         liga = League.objects.get(id = kwargs.get('team_id'))
@@ -181,9 +234,6 @@ def player_detail(request, team_id, format=None):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
-
 @api_view(['GET', 'POST'])
 def team_list(request, **kwargs):
     """
@@ -197,6 +247,11 @@ def team_list(request, **kwargs):
     elif request.method == 'POST':
         info = request.data
         params = kwargs
+        try:
+          info['name']
+          info['sport']
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         string = info['name'] + ':' + info['city']
         id_f = b64encode(string.encode()).decode('utf-8')
         teams = Team.objects.all()
