@@ -158,6 +158,12 @@ def team_list(request, **kwargs):
           info['city']
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            league = League.objects.get(id=params["league_id"])
+        except:
+            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
 
         string = info['name'] + ':' + info['city']
         id_f = b64encode(string.encode()).decode('utf-8')
@@ -265,6 +271,7 @@ def player_list(request, **kwargs):
         return Response(all, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
+
         info = request.data
         params = kwargs
         try:
@@ -273,6 +280,11 @@ def player_list(request, **kwargs):
           info['position']
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            team = Team.objects.get(id=params["team_id"])
+        except:
+            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         string = info['name'] + ':' + info['position']
         id_f = b64encode(string.encode()).decode('utf-8')
@@ -294,7 +306,7 @@ def player_list(request, **kwargs):
             team = Team.objects.get(id=params["team_id"])
             league = League.objects.get(id=team.league_id)
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         team = Team.objects.get(id=params["team_id"])
         league = League.objects.get(id=team.league_id)
