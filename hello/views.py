@@ -8,7 +8,7 @@ from hello.serializers import PlayerSerializer
 from hello.models import Player
 
 from hello.serializers import LeagueSerializer
-from hello.models import League
+from .models import League
 
 from hello.serializers import TeamSerializer
 from hello.models import Team
@@ -47,20 +47,9 @@ def league_list(request, **kwargs):
           info['sport']
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
+        leagues = League.objects.all()
         string = info['name'] + ':' + info['sport']
         id_f = b64encode(string.encode()).decode('utf-8')
-        leagues = League.objects.all()
-        for league in leagues:
-            if league.id == id_f[0:22]:
-                dicc = {}
-                dicc["id"] = league.id
-                dicc["name"] = league.name
-                dicc["sport"] = league.sport
-                dicc["teams"] = league.teams
-                dicc["players"] = league.players
-                dicc["self"] = league._self
-                return Response(dicc,status=status.HTTP_409_CONFLICT)
         dicc  = {}
         dicc["id"] = id_f[0:22]
         dicc["name"] = info['name']
@@ -74,30 +63,65 @@ def league_list(request, **kwargs):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def league_detail(request, team_id, format=None):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    try:
-        player = Player.objects.get(pk=pk)
-    except Player.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
+@api_view(['GET', 'DELETE'])
+def league_detail(request, league_id, format=None):
     if request.method == 'GET':
-        serializer = PlayerSerializer(snippet)
-        return Response(serializer.data)
+        try:
+            league = League.objects.get(id=league_id)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    elif request.method == 'PUT':
-        serializer = PlayerSerializer(player, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        leagues = League.objects.all()
+        dicc = {}
+        for league in leagues:
+            if league.id == league_id:
+                dicc["id"] = league.id
+                dicc["name"] = league.name
+                dicc["sport"] = league.sport
+                dicc["teams"] = league.teams
+                dicc["players"] = league.players
+                dicc["self"] = league._self
+                return Response(dicc, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     elif request.method == 'DELETE':
-        player.delete()
+        try:
+            league = League.objects.get(id=league_id)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        league = League.objects.get(id=league_id)
+        teams = Team.objects.all()
+        for team in teams:
+            if team.league_id == league_id:
+                players = Team.objects.get(id=team.id)
+                for player in players:
+                    player.delete()
+                team.delete()
+
+        league.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+def league_train(request, league_id, format=None):
+    try:
+        league = League.objects.get(id=league_id)
+    except league.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    teams = Team.objects.all()
+    for team in teams:
+        players = Team.objects.get(id=team.id)
+        for player in players:
+            dicc = {}
+            dicc["times_trained"] = player.times_trained + 1
+            serializer = PlayerSerializer(player, data=dicc, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+
+    return Response(status=status.HTTP_200_OK)
+
 
 
 
