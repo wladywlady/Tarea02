@@ -9,7 +9,7 @@ path = "https://stark-stream-20032.herokuapp.com/"
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ('id','team_id','name', 'age', 'position','self')
+        fields = ('id','team_id','name', 'age', 'position','league','team','self')
 
 PlayerSerializer._declared_fields["self"] = serializers.CharField(source="_self")
 
