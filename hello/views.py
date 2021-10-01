@@ -47,9 +47,20 @@ def league_list(request, **kwargs):
           info['sport']
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        leagues = League.objects.all()
+
         string = info['name'] + ':' + info['sport']
         id_f = b64encode(string.encode()).decode('utf-8')
+        leagues = League.objects.all()
+        for league in leagues:
+            if league.id == id_f[0:22]:
+                dicc = {}
+                dicc["id"] = league.id
+                dicc["name"] = league.name
+                dicc["sport"] = league.sport
+                dicc["teams"] = league.teams
+                dicc["players"] = league.players
+                dicc["self"] = league._self
+                return Response(dicc,status=status.HTTP_409_CONFLICT)
         dicc  = {}
         dicc["id"] = id_f[0:22]
         dicc["name"] = info['name']
